@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 
 export default function Planejamento() {
   const navigate = useNavigate();
+  const [tipo, setTipo] = useState('');
   const [descricao, setDescricao] = useState('');
   const [valorEstimado, setValorEstimado] = useState('');
   const [valorPago, setValorPago] = useState('');
@@ -18,16 +19,18 @@ export default function Planejamento() {
   }, [itens]);
 
   const adicionarItem = () => {
-    if (!descricao) return;
+    if (!descricao || !tipo) return;
 
     const novo = {
       id: Date.now(),
+      tipo,
       descricao,
       valorEstimado: parseFloat(valorEstimado) || 0,
       valorPago: parseFloat(valorPago) || 0,
     };
 
     setItens([...itens, novo]);
+    setTipo('');
     setDescricao('');
     setValorEstimado('');
     setValorPago('');
@@ -41,7 +44,20 @@ export default function Planejamento() {
     <div className="space-y-4">
       <div className="bg-white p-4 rounded-xl shadow space-y-4">
         <h2 className="text-lg font-bold text-purple-600">Adicionar Item</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <select
+            value={tipo}
+            onChange={(e) => setTipo(e.target.value)}
+            className="border rounded px-3 py-2"
+          >
+            <option value="">Tipo</option>
+            <option value="Mobiliário">Mobiliário</option>
+            <option value="Reforma">Reforma</option>
+            <option value="Convidados">Convidados</option>
+            <option value="Fotografia">Fotografia</option>
+            <option value="Outros">Outros</option>
+          </select>
+
           <input
             type="text"
             placeholder="Descrição"
@@ -77,7 +93,7 @@ export default function Planejamento() {
           <div key={item.id} className="bg-white rounded-xl shadow p-4">
             <p className="font-semibold">{item.descricao}</p>
             <p className="text-sm text-gray-600">
-              Estimado: R$ {item.valorEstimado.toFixed(2).replace('.', ',')} | Pago: R$ {item.valorPago.toFixed(2).replace('.', ',')}
+              Tipo: {item.tipo} | Estimado: R$ {item.valorEstimado.toFixed(2).replace('.', ',')} | Pago: R$ {item.valorPago.toFixed(2).replace('.', ',')}
             </p>
             <button
               onClick={() => excluirItem(item.id)}
