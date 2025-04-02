@@ -1,36 +1,44 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { HashRouter, Routes, Route, Link } from 'react-router-dom';
 import { useState } from 'react';
 import Home from './pages/Home';
 import Planejamento from './pages/Planejamento';
 import Convidados from './pages/Convidados';
 
-export default function App() {
-  const [menuOpen, setMenuOpen] = useState(false);
+function App() {
+  const [menuAberto, setMenuAberto] = useState(false);
 
   return (
-    <Router>
+    <HashRouter>
       <div className="min-h-screen bg-gray-100">
-        {/* Menu hamburguer */}
-        <div className="bg-white p-4 shadow flex justify-between items-center">
-          <h1 className="text-lg font-bold text-purple-600">Casamento Planner</h1>
+        {/* Topo com logo e menu hamburguer */}
+        <header className="bg-white shadow-md p-4 flex justify-between items-center">
+          <h1 className="text-xl font-bold text-purple-700">Casamento Planner</h1>
           <button
-            className="text-purple-600 focus:outline-none"
-            onClick={() => setMenuOpen(!menuOpen)}
+            className="text-purple-700 text-2xl md:hidden"
+            onClick={() => setMenuAberto(!menuAberto)}
           >
-            &#9776;
+            ☰
           </button>
-        </div>
 
-        {/* Menu lateral */}
-        {menuOpen && (
-          <div className="bg-white shadow-md p-4 space-y-2">
-            <a href="/" className="block text-gray-700 hover:text-purple-600">🏠 Home</a>
-            <a href="/planejamento" className="block text-gray-700 hover:text-purple-600">📋 Planejamento</a>
-            <a href="/convidados" className="block text-gray-700 hover:text-purple-600">👥 Convidados</a>
-          </div>
-        )}
+            <nav
+              className={`absolute top-16 right-4 bg-white shadow-lg rounded-md p-4 flex flex-col items-start space-y-2 transition-all duration-300 z-10 ${
+                menuAberto ? 'flex' : 'hidden'
+              } md:hidden`}
+            >
+            <Link to="/" onClick={() => setMenuAberto(false)}>🏠 Início</Link>
+            <Link to="/planejamento" onClick={() => setMenuAberto(false)}>📋 Planejamento</Link>
+            <Link to="/convidados" onClick={() => setMenuAberto(false)}>👥 Convidados</Link>
+          </nav>
 
-        {/* Conteúdo */}
+          {/* Menu fixo (desktop) */}
+          <nav className="hidden md:flex gap-6 text-purple-700">
+            <Link to="/">🏠 Início</Link>
+            <Link to="/planejamento">📋 Planejamento</Link>
+            <Link to="/convidados">👥 Convidados</Link>
+          </nav>
+        </header>
+
+        {/* Conteúdo da página */}
         <main className="p-4">
           <Routes>
             <Route path="/" element={<Home />} />
@@ -39,6 +47,8 @@ export default function App() {
           </Routes>
         </main>
       </div>
-    </Router>
+    </HashRouter>
   );
 }
+
+export default App;
