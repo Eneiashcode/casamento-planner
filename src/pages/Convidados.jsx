@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export default function Convidados() {
+  const navigate = useNavigate();
   const [nome, setNome] = useState('');
   const [grupo, setGrupo] = useState('');
   const [acompanhantes, setAcompanhantes] = useState('');
@@ -9,8 +11,6 @@ export default function Convidados() {
   const [convidados, setConvidados] = useState([]);
   const [filtro, setFiltro] = useState('');
   const [editandoId, setEditandoId] = useState(null);
-  const [paginaAtual, setPaginaAtual] = useState(1);
-  const itensPorPagina = 10;
 
   useEffect(() => {
     const dados = localStorage.getItem('listaConvidados');
@@ -69,16 +69,6 @@ export default function Convidados() {
 
   const totalConvidados = convidados.length;
   const totalPessoas = convidados.reduce((acc, c) => acc + 1 + c.acompanhantes, 0);
-  const totalPaginas = Math.ceil(listaFiltrada.length / itensPorPagina);
-
-  const indiceInicial = (paginaAtual - 1) * itensPorPagina;
-  const listaPaginada = listaFiltrada.slice(indiceInicial, indiceInicial + itensPorPagina);
-
-  const mudarPagina = (novaPagina) => {
-    if (novaPagina >= 1 && novaPagina <= totalPaginas) {
-      setPaginaAtual(novaPagina);
-    }
-  };
 
   return (
     <div className="space-y-4">
@@ -154,13 +144,12 @@ export default function Convidados() {
           value={filtro}
           onChange={(e) => {
             setFiltro(e.target.value);
-            setPaginaAtual(1);
           }}
         />
       </div>
 
       <div className="space-y-2">
-        {listaPaginada.map((c) => (
+        {listaFiltrada.map((c) => (
           <div key={c.id} className="bg-white rounded-xl shadow p-4">
             <div className="flex justify-between items-start">
               <div>
@@ -192,27 +181,14 @@ export default function Convidados() {
         ))}
       </div>
 
-      {totalPaginas > 1 && (
-        <div className="flex justify-center items-center gap-4 pt-4">
-          <button
-            onClick={() => mudarPagina(paginaAtual - 1)}
-            className="bg-gray-200 px-3 py-1 rounded disabled:opacity-50"
-            disabled={paginaAtual === 1}
-          >
-            ⬅ Anterior
-          </button>
-          <span className="text-sm text-gray-600">
-            Página {paginaAtual} de {totalPaginas}
-          </span>
-          <button
-            onClick={() => mudarPagina(paginaAtual + 1)}
-            className="bg-gray-200 px-3 py-1 rounded disabled:opacity-50"
-            disabled={paginaAtual === totalPaginas}
-          >
-            Próxima ➡
-          </button>
-        </div>
-      )}
+      <div className="flex justify-center mt-8">
+        <button
+          onClick={() => navigate(-1)}
+          className="bg-gray-200 text-sm px-6 py-2 rounded hover:bg-gray-300"
+        >
+          ← Voltar
+        </button>
+      </div>
     </div>
   );
 }
