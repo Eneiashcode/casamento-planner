@@ -1,5 +1,13 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { db } from '../firebase';
+import {
+  collection,
+  getDocs,
+  addDoc,
+  deleteDoc,
+  doc
+} from 'firebase/firestore';
 
 export default function Planejamento() {
   const navigate = useNavigate();
@@ -9,35 +17,43 @@ export default function Planejamento() {
   const [valorPago, setValorPago] = useState('');
   const [itens, setItens] = useState([]);
 
+  const colecaoRef = collection(db, 'planejamento');
+
+  // Buscar dados do Firebase
+  const carregarItens = async () => {
+    const snapshot = await getDocs(colecaoRef);
+    const dados = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+    setItens(dados);
+  };
+
   useEffect(() => {
-    const salvos = localStorage.getItem('itensPlanejamento');
-    if (salvos) setItens(JSON.parse(salvos));
+    carregarItens();
   }, []);
 
-  useEffect(() => {
-    localStorage.setItem('itensPlanejamento', JSON.stringify(itens));
-  }, [itens]);
-
-  const adicionarItem = () => {
+  const adicionarItem = async () => {
     if (!descricao || !tipo) return;
 
     const novo = {
-      id: Date.now(),
       tipo,
       descricao,
       valorEstimado: parseFloat(valorEstimado) || 0,
-      valorPago: parseFloat(valorPago) || 0,
+      valorPago: parseFloat(valorPago) || 0
     };
 
-    setItens([...itens, novo]);
+    await addDoc(colecaoRef, novo);
     setTipo('');
     setDescricao('');
     setValorEstimado('');
     setValorPago('');
+    carregarItens(); // atualiza a lista
   };
 
-  const excluirItem = (id) => {
-    setItens(itens.filter((item) => item.id !== id));
+  const excluirItem = async (id) => {
+    await deleteDoc(doc(db, 'planejamento', id));
+    carregarItens(); // atualiza a lista
   };
 
   return (

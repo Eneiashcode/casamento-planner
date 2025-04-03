@@ -1,5 +1,14 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import {
+  collection,
+  getDocs,
+  addDoc,
+  deleteDoc,
+  updateDoc,
+  doc
+} from 'firebase/firestore';
+import { db } from '../firebase';
 
 export default function Convidados() {
   const navigate = useNavigate();
@@ -12,14 +21,20 @@ export default function Convidados() {
   const [filtro, setFiltro] = useState('');
   const [editandoId, setEditandoId] = useState(null);
 
-  useEffect(() => {
-    const dados = localStorage.getItem('listaConvidados');
-    if (dados) setConvidados(JSON.parse(dados));
-  }, []);
+  const colecaoRef = collection(db, 'convidados');
+
+  const carregarConvidados = async () => {
+    const snapshot = await getDocs(colecaoRef);
+    const dados = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+    setConvidados(dados);
+  };
 
   useEffect(() => {
-    localStorage.setItem('listaConvidados', JSON.stringify(convidados));
-  }, [convidados]);
+    carregarConvidados();
+  }, []);
 
   const limparCampos = () => {
     setNome('');
@@ -30,24 +45,26 @@ export default function Convidados() {
     setEditandoId(null);
   };
 
-  const adicionarOuAtualizar = () => {
+  const adicionarOuAtualizar = async () => {
     if (!nome || !grupo) return;
 
     const novo = {
-      id: editandoId || Date.now(),
       nome,
       grupo,
       acompanhantes: parseInt(acompanhantes) || 0,
       presenca,
-      observacoes,
+      observacoes
     };
 
-    const novaLista = editandoId
-      ? convidados.map((c) => (c.id === editandoId ? novo : c))
-      : [...convidados, novo];
+    if (editandoId) {
+      const ref = doc(db, 'convidados', editandoId);
+      await updateDoc(ref, novo);
+    } else {
+      await addDoc(colecaoRef, novo);
+    }
 
-    setConvidados(novaLista);
     limparCampos();
+    carregarConvidados();
   };
 
   const editar = (item) => {
@@ -59,8 +76,9 @@ export default function Convidados() {
     setEditandoId(item.id);
   };
 
-  const excluir = (id) => {
-    setConvidados(convidados.filter((c) => c.id !== id));
+  const excluir = async (id) => {
+    await deleteDoc(doc(db, 'convidados', id));
+    carregarConvidados();
   };
 
   const listaFiltrada = convidados.filter((c) =>
